@@ -13,12 +13,29 @@
             margin: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
+        .banner-bg {
+            background-image: url('/api/placeholder/1200/400');
+            background-size: cover;
+            background-position: center;
+        }
+        .carousel-container {
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+        }
+        .carousel-track {
+            display: flex;
+            transition: transform 0.5s ease;
+        }
+        .carousel-item {
+            flex: 0 0 100%;
+        }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect } = React;
         
         // Lucide 아이콘들을 SVG로 직접 구현
         const HomeIcon = () => (
@@ -91,25 +108,18 @@
           </svg>
         );
         
-        const BathIcon = () => (
+        const FaxIcon = () => (
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"></path>
-            <line x1="10" y1="5" x2="8" y2="7"></line>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <line x1="7" y1="19" x2="7" y2="21"></line>
-            <line x1="17" y1="19" x2="17" y2="21"></line>
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
           </svg>
         );
-
-        const NurseIcon = () => (
+        
+        const ClockIcon = () => (
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M8 2v4"></path>
-            <path d="M16 2v4"></path>
-            <path d="M4 10h16"></path>
-            <circle cx="12" cy="16" r="2"></circle>
-            <path d="M10 16h4"></path>
-            <path d="M12 14v4"></path>
-            <rect x="2" y="6" width="20" height="14" rx="2"></rect>
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
           </svg>
         );
 
@@ -127,6 +137,48 @@
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
         );
+        
+        // 이미지 캐러셀 컴포넌트
+        const ImageCarousel = ({ images }) => {
+          const [currentIndex, setCurrentIndex] = useState(0);
+          
+          useEffect(() => {
+            const interval = setInterval(() => {
+              setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+            }, 5000);
+            return () => clearInterval(interval);
+          }, [images.length]);
+          
+          return (
+            <div className="carousel-container rounded-lg overflow-hidden shadow-md">
+              <div 
+                className="carousel-track"
+                style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+              >
+                {images.map((image, index) => (
+                  <div key={index} className="carousel-item">
+                    <img 
+                      src={image} 
+                      alt={`슬라이드 ${index + 1}`} 
+                      className="w-full h-64 md:h-96 object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
+                {images.map((_, index) => (
+                  <button
+                    key={index}
+                    className={`w-3 h-3 rounded-full ${
+                      currentIndex === index ? 'bg-white' : 'bg-gray-400 bg-opacity-50'
+                    }`}
+                    onClick={() => setCurrentIndex(index)}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        };
 
         const Wireframe = () => {
           const [currentPage, setCurrentPage] = useState('home');
@@ -134,12 +186,10 @@
 
           const navItems = [
             { id: 'home', name: '홈', icon: HomeIcon },
-            { id: 'about', name: '센터소개', icon: BuildingIcon },
-            { id: 'visit-care', name: '방문요양', icon: HeartIcon },
-            { id: 'visit-bath', name: '방문목욕', icon: BathIcon },
-            { id: 'visit-nurse', name: '방문간호', icon: NurseIcon },
-            { id: 'insurance', name: '노인장기요양보험', icon: FileTextIcon },
-            { id: 'pricing', name: '요양수가', icon: CalculatorIcon },
+            { id: 'about', name: '회사소개', icon: BuildingIcon },
+            { id: 'insurance', name: '노인장기요양보험이란', icon: FileTextIcon },
+            { id: 'health', name: '건강정보', icon: HeartIcon },
+            { id: 'pricing', name: '방문요양수가', icon: CalculatorIcon },
             { id: 'location', name: '오시는길', icon: MapPinIcon },
           ];
 
@@ -149,14 +199,10 @@
                 return <HomePage />;
               case 'about':
                 return <AboutPage />;
-              case 'visit-care':
-                return <VisitCarePage />;
-              case 'visit-bath':
-                return <VisitBathPage />;
-              case 'visit-nurse':
-                return <VisitNursePage />;
               case 'insurance':
                 return <InsurancePage />;
+              case 'health':
+                return <HealthPage />;
               case 'pricing':
                 return <PricingPage />;
               case 'location':
@@ -173,8 +219,9 @@
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                   <div className="flex justify-between items-center h-16">
                     <div className="flex items-center">
-                      <div className="w-40 h-10 bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                        딱좋아 재가복지센터
+                      <div className="flex items-center">
+                        <img src="/api/placeholder/40/40" alt="로고" className="h-10 w-10 mr-2" />
+                        <span className="text-blue-600 font-bold text-lg">딱좋아 재가복지센터</span>
                       </div>
                     </div>
                     
@@ -227,6 +274,14 @@
                   </div>
                 )}
               </header>
+              
+              {/* Banner Image */}
+              <div className="banner-bg h-48 md:h-64 lg:h-80 flex items-center justify-center">
+                <div className="text-center text-white bg-black bg-opacity-50 p-6 rounded">
+                  <h1 className="text-3xl md:text-4xl font-bold mb-2">딱좋아 재가복지센터</h1>
+                  <p className="text-xl">어르신을 위한 쉼터</p>
+                </div>
+              </div>
 
               {/* Main Content */}
               <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -240,8 +295,9 @@
                     <div>
                       <h3 className="text-lg font-semibold mb-4">센터 정보</h3>
                       <p className="text-gray-300">
-                        우리는 어르신들의 건강한 삶을 위해<br />
-                        전문적인 재가복지서비스를 제공합니다.
+                        어르신을 위한 쉼터<br />
+                        노인장기요양보험 전문상담업체<br />
+                        방문요양, 방문목욕, 방문간호, 복지용구
                       </p>
                     </div>
                     <div>
@@ -252,21 +308,26 @@
                           <span className="ml-2">032-710-4595</span>
                         </div>
                         <div className="flex items-center">
-                          <MailIcon />
-                          <span className="ml-2">joajoacare@example.com</span>
+                          <FaxIcon />
+                          <span className="ml-2">032-721-4595</span>
                         </div>
                         <div className="flex items-center">
                           <MapPinIcon />
-                          <span className="ml-2">인천광역시 부평구</span>
+                          <span className="ml-2">인천광역시 계양구 박촌동 98-1, 204호</span>
                         </div>
                       </div>
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold mb-4">운영시간</h3>
                       <div className="text-gray-300">
-                        <p>평일: 09:00 - 18:00</p>
-                        <p>토요일: 09:00 - 13:00</p>
-                        <p>일요일 및 공휴일: 휴무</p>
+                        <div className="flex items-center mb-2">
+                          <ClockIcon />
+                          <span className="ml-2">평일: 09:00 - 18:00</span>
+                        </div>
+                        <div className="flex items-center">
+                          <ClockIcon />
+                          <span className="ml-2">주말 및 공휴일: 휴무</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -280,255 +341,98 @@
         };
 
         // Page Components
-        const HomePage = () => (
-          <div className="space-y-12">
-            {/* Hero Section */}
-            <section className="bg-blue-50 rounded-lg p-8 md:p-12">
-              <div className="max-w-3xl">
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                  믿을 수 있는 재가복지 서비스
-                </h1>
-                <p className="text-lg text-gray-600 mb-6">
-                  전문 요양보호사가 어르신의 가정을 방문하여 맞춤형 케어 서비스를 제공합니다.
-                </p>
-                <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
-                  상담 신청하기
-                </button>
-              </div>
-            </section>
-
-            {/* Services */}
-            <section>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">주요 서비스</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[
-                  { title: '방문요양', desc: '일상생활 지원 및 신체활동 지원 서비스' },
-                  { title: '방문목욕', desc: '이동식 목욕차량을 이용한 전문 목욕 서비스' },
-                  { title: '방문간호', desc: '전문 간호사에 의한 건강관리 서비스' },
-                ].map((service, index) => (
-                  <div key={index} className="bg-white p-6 rounded-lg shadow-sm">
-                    <h3 className="text-lg font-semibold mb-2">{service.title}</h3>
-                    <p className="text-gray-600">{service.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* 서비스 대상자 */}
-            <section className="bg-white p-8 rounded-lg shadow-sm">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">서비스 대상자</h2>
-              <ul className="list-disc list-inside space-y-2 text-gray-600 ml-4">
-                <li>65세 이상으로 거동이 불편하신 분은 누구나 신청가능</li>
-                <li>65세 미만으로 노인성 질병으로 인해 거동이 불편하신 분 신청가능</li>
-                <li>(노인성질병 : 뇌혈관 질환, 파킨슨병, 치매등)</li>
-                <li>본인 부담금 : 15% ~ 0% (정부지원)</li>
-              </ul>
-            </section>
-
-            {/* CTA */}
-            <section className="bg-gray-100 rounded-lg p-8 text-center">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">재가복지 서비스가 필요하신가요?</h2>
-              <p className="text-gray-600 mb-6">전문 상담사가 친절히 안내해드립니다.</p>
-              <div className="text-xl font-bold text-blue-600 mb-4">032-710-4595</div>
-              <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
-                무료 상담 받기
-              </button>
-            </section>
-          </div>
-        );
-
-        const AboutPage = () => (
-          <div className="space-y-8">
-            <h1 className="text-3xl font-bold text-gray-900">센터소개</h1>
-            <div className="prose max-w-none">
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <h2 className="text-xl font-semibold mb-4">센터 비전</h2>
-                <p className="text-gray-600 mb-6">
-                  어르신들이 건강하고 행복한 노후를 보내실 수 있도록 최선을 다하겠습니다.
-                  저희 딱좋아 재가복지센터는 어르신들의 신체적, 정서적 건강을 중요하게 생각하며,
-                  가정에서 편안하게 생활하실 수 있도록 맞춤형 서비스를 제공합니다.
-                </p>
-                <h2 className="text-xl font-semibold mb-4">센터 특징</h2>
-                <ul className="list-disc list-inside space-y-2 text-gray-600 ml-4">
-                  <li>전문적인 요양보호사 관리 및 배치</li>
-                  <li>정기적인 서비스 품질 모니터링</li>
-                  <li>개인별 맞춤형 케어 플랜 제공</li>
-                  <li>가족과의 원활한 소통 체계 구축</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        );
-
-        const VisitCarePage = () => (
-          <div className="space-y-8">
-            <h1 className="text-3xl font-bold text-gray-900">방문요양</h1>
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h2 className="text-xl font-semibold mb-4">방문요양 서비스란?</h2>
-              <p className="text-gray-600 mb-6">
-                장기요양 1~5등급 판정을 받은 어르신의 가정을 방문하여 신체활동 및 일상생활 지원 서비스를 제공합니다.
-              </p>
+        const HomePage = () => {
+          // 홈페이지 이미지 (실제 구현 시 실제 이미지 경로로 대체)
+          const homeImages = [
+            "/api/placeholder/1200/600",
+            "/api/placeholder/1200/600",
+            "/api/placeholder/1200/600"
+          ];
+          
+          return (
+            <div className="space-y-12">
+              {/* 이미지 캐러셀 */}
+              <ImageCarousel images={homeImages} />
               
-              <h2 className="text-xl font-semibold mb-4">주요 서비스 내용</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="font-semibold text-blue-600 mb-2">신체활동 지원</h3>
-                  <ul className="list-disc list-inside space-y-1 text-gray-600 ml-4">
-                    <li>세면도움</li>
-                    <li>구강관리</li>
-                    <li>몸 청결 유지</li>
-                    <li>식사도움</li>
-                    <li>체위변경</li>
-                    <li>이동도움</li>
-                    <li>화장실 이용 도움</li>
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-blue-600 mb-2">일상생활 지원</h3>
-                  <ul className="list-disc list-inside space-y-1 text-gray-600 ml-4">
-                    <li>취사</li>
-                    <li>청소 및 주변정돈</li>
-                    <li>세탁</li>
-                    <li>외출동행</li>
-                    <li>말벗 및 생활상담</li>
-                    <li>복약지도</li>
-                    <li>정서지원</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-        const VisitBathPage = () => (
-          <div className="space-y-8">
-            <h1 className="text-3xl font-bold text-gray-900">방문목욕</h1>
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h2 className="text-xl font-semibold mb-4">방문목욕 서비스란?</h2>
-              <p className="text-gray-600 mb-6">
-                장기요양 1~5등급 판정을 받은 어르신의 가정을 방문하여 전문 장비를 갖춘 차량과 요양보호사가 목욕서비스를 제공합니다.
-              </p>
-              
-              <h2 className="text-xl font-semibold mb-4">서비스 특징</h2>
-              <ul className="list-disc list-inside space-y-2 text-gray-600 ml-4">
-                <li>안전하고 편안한 목욕 환경 제공</li>
-                <li>위생적인 전문 장비 사용</li>
-                <li>거동이 불편한 어르신에게 적합한 목욕 서비스</li>
-                <li>계절과 체온에 맞는 적정 온도 유지</li>
-                <li>피부 상태 체크 및 관리</li>
-              </ul>
-              
-              <h2 className="text-xl font-semibold mt-6 mb-4">서비스 과정</h2>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {['준비', '목욕서비스', '마무리케어', '피부관리'].map((step, index) => (
-                  <div key={index} className="bg-blue-50 p-4 rounded text-center">
-                    <div className="text-blue-600 font-semibold">STEP {index + 1}</div>
-                    <div>{step}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        );
-
-        const VisitNursePage = () => (
-          <div className="space-y-8">
-            <h1 className="text-3xl font-bold text-gray-900">방문간호</h1>
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h2 className="text-xl font-semibold mb-4">방문간호 서비스란?</h2>
-              <p className="text-gray-600 mb-6">
-                장기요양 1~5등급 판정을 받은 어르신의 가정을 방문하여 전문 간호사가 건강관리 서비스를 제공합니다.
-              </p>
-              
-              <h2 className="text-xl font-semibold mb-4">주요 서비스 내용</h2>
-              <ul className="list-disc list-inside space-y-2 text-gray-600 ml-4">
-                <li>건강상태 체크 및 관찰</li>
-                <li>기본 간호 서비스 (혈압, 혈당, 맥박 측정 등)</li>
-                <li>투약 관리 및 지도</li>
-                <li>욕창 관리</li>
-                <li>배뇨 및 배변 관리</li>
-                <li>상처 치료 및 드레싱</li>
-                <li>영양 관리 및 식이요법 지도</li>
-                <li>만성질환 관리 및 교육</li>
-              </ul>
-              
-              <h2 className="text-xl font-semibold mt-6 mb-4">방문간호의 장점</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-blue-50 p-4 rounded">
-                  <h3 className="font-semibold text-blue-600 mb-2">전문적인 건강관리</h3>
-                  <p className="text-gray-600">전문 간호사에 의한 체계적인 건강관리로 만성질환 악화 방지 및 건강 유지</p>
-                </div>
-                <div className="bg-blue-50 p-4 rounded">
-                  <h3 className="font-semibold text-blue-600 mb-2">병원 방문 부담 감소</h3>
-                  <p className="text-gray-600">가정에서 받는 간호 서비스로 병원 방문에 따른 불편함과 위험 감소</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-        const InsurancePage = () => (
-          <div className="space-y-8">
-            <h1 className="text-3xl font-bold text-gray-900">노인장기요양보험</h1>
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">노인장기요양보험이란?</h2>
-                  <p className="text-gray-600">
-                    고령이나 노인성 질병 등으로 일상생활을 혼자서 수행하기 어려운 어르신들에게
-                    신체활동 또는 가사활동 지원 등의 장기요양급여를 제공하는 사회보험제도입니다.
+              {/* 센터 소개 */}
+              <section className="bg-blue-50 rounded-lg p-8 md:p-12">
+                <div className="max-w-3xl">
+                  <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                    어르신을 위한 쉼터
+                  </h1>
+                  <p className="text-lg text-gray-600 mb-6">
+                    노인장기요양보험 전문상담업체 딱좋아 재가복지센터에서는 어르신의 가정을 방문하여 맞춤형 케어 서비스를 제공합니다.
                   </p>
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">신청 대상</h2>
-                  <ul className="list-disc list-inside space-y-2 text-gray-600 ml-4">
-                    <li>65세 이상 어르신</li>
-                    <li>65세 미만이지만 노인성 질병이 있는 분</li>
-                    <li>일상생활 수행이 어려운 분</li>
-                  </ul>
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">신청 절차</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                    {['신청', '방문조사', '등급판정', '결과통보', '서비스 이용'].map((step, index) => (
-                      <div key={index} className="bg-blue-50 p-4 rounded text-center">
-                        <div className="text-blue-600 font-semibold">STEP {index + 1}</div>
-                        <div>{step}</div>
-                      </div>
-                    ))}
+                  <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+                    <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+                      상담 신청하기
+                    </button>
+                    <div className="text-xl font-bold text-blue-600 flex items-center justify-center">
+                      <PhoneIcon />
+                      <span className="ml-2">032-710-4595</span>
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">등급별 서비스</h2>
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">등급</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">판정기준</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">이용가능 서비스</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {[
-                        { grade: '1등급', criteria: '95점 이상', services: '재가급여, 시설급여' },
-                        { grade: '2등급', criteria: '75점 이상 95점 미만', services: '재가급여, 시설급여' },
-                        { grade: '3등급', criteria: '60점 이상 75점 미만', services: '재가급여, 시설급여' },
-                        { grade: '4등급', criteria: '51점 이상 60점 미만', services: '재가급여, 시설급여' },
-                        { grade: '5등급', criteria: '45점 이상 51점 미만', services: '재가급여, 치매 특별등급' },
-                      ].map((item, index) => (
-                        <tr key={index}>
-                          <td className="px-6 py-4 whitespace-nowrap">{item.grade}</td>
-                          <td className="px-6 py-4 whitespace-nowrap">{item.criteria}</td>
-                          <td className="px-6 py-4 whitespace-nowrap">{item.services}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              </section>
+
+              {/* 서비스 */}
+              <section>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">주요 서비스</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {[
+                    { title: '방문요양', desc: '일상생활 지원 및 신체활동 지원 서비스', image: '/api/placeholder/400/250' },
+                    { title: '방문목욕', desc: '이동식 목욕차량을 이용한 전문 목욕 서비스', image: '/api/placeholder/400/250' },
+                    { title: '방문간호', desc: '전문 간호사에 의한 건강관리 서비스', image: '/api/placeholder/400/250' },
+                  ].map((service, index) => (
+                    <div key={index} className="bg-white p-6 rounded-lg shadow-sm">
+                      <img src={service.image} alt={service.title} className="w-full h-40 object-cover rounded-md mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">{service.title}</h3>
+                      <p className="text-gray-600">{service.desc}</p>
+                    </div>
+                  ))}
                 </div>
-              </div>
+              </section>
+
+              {/* 서비스 대상자 */}
+              <section className="bg-white p-8 rounded-lg shadow-sm">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">서비스 대상자</h2>
+                <ul className="list-disc list-inside space-y-2 text-gray-600 ml-4">
+                  <li>65세 이상으로 거동이 불편하신 분은 누구나 신청가능</li>
+                  <li>65세 미만으로 노인성 질병으로 인해 거동이 불편하신 분 신청가능</li>
+                  <li>(노인성질병 : 뇌혈관 질환, 파킨슨병, 치매등)</li>
+                  <li>본인 부담금 : 15% ~ 0% (정부지원)</li>
+                </ul>
+              </section>
+
+              {/* CTA */}
+              <section className="bg-gray-100 rounded-lg p-8 text-center">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">재가복지 서비스가 필요하신가요?</h2>
+                <p className="text-gray-600 mb-6">전문 상담사가 친절히 안내해드립니다.</p>
+                <div className="text-xl font-bold text-blue-600 mb-4">032-710-4595</div>
+                <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+                  무료 상담 받기
+                </button>
+              </section>
             </div>
-          </div>
-        );
+          );
+        };
+
+        const AboutPage = () => {
+          // 센터 소개 페이지 이미지
+          const aboutImages = [
+            "/api/placeholder/800/500",
+            "/api/placeholder/800/500",
+            "/api/placeholder/800/500",
+            "/api/placeholder/800/500",
+            "/api/placeholder/800/500",
+            "/api/placeholder/800/500"
+          ];
+          
+          return (
+            <div className="space-y-8">
+              <h1 className="text-3xl font-bold text-gray-900">회사소개</h1>
+              
+              {/* 이미지 캐
 
         const PricingPage = () => (
           <div className="space-y-8">
